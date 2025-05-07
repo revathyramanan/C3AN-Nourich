@@ -1,7 +1,7 @@
 ## Nourich: Disease Specific Diet Management System
 Objective: The goal of the system is to analyze whether a given recipe is suitable for specific chronic conditions (diabetes) or not. In addition, the system aims to provide alternative recipes or a revised recipe through ingredient and cooking method substitutions. 
 
-Challenges: Analyzing recipe suitability for diabetes involves investigating the suitability of ingredients, cooking methods, and their interactions. This requires structured presentation from unstructured data (e.g., natural language, images) to draw individual inferences on the suitability of ingredients, cooking methods, and their interactions. This requires compositional reasoning, where the problem is broken into sub-problems, drawing individual inferences, and is combined to form a final decision on suitability. Analyzing the suitability of these individual components requires contextual knowledge, such as nutrition, disease-specific guidelines, glycemic index, and cooking method effects with low-level data elevated to high-level concepts (e.g., "potato is a healthy carbohydrate"). Although general generative models are trained on extensive data, extracting disease-specific dietary constraints from their embedding space and establishing relationships between concepts to draw inferences remains a significant challenge \cite{}. In such high-stakes domains, incorrect recommendations can be harmful, so the model must explain the reasons and also trace its reasoning to trusted knowledge sources.
+Challenges: Analyzing recipe suitability for diabetes involves investigating the suitability of ingredients, cooking methods, and their interactions. This requires structured presentation from unstructured data (e.g., natural language, images) to draw individual inferences on the suitability of ingredients, cooking methods, and their interactions. This requires compositional reasoning, where the problem is broken into sub-problems, drawing individual inferences, and is combined to form a final decision on suitability. Analyzing the suitability of these individual components requires contextual knowledge, such as nutrition, disease-specific guidelines, glycemic index, and cooking method effects with low-level data elevated to high-level concepts (e.g., "potato is a healthy carbohydrate"). Although general generative models are trained on extensive data, extracting disease-specific dietary constraints from their embedding space and establishing relationships between concepts to draw inferences remains a significant challenge. In such high-stakes domains, incorrect recommendations can be harmful, so the model must explain the reasons and also trace its reasoning to trusted knowledge sources.
 
 
 #### C3AN for Nourich
@@ -15,7 +15,7 @@ We propose Nourich, a disease specific diet management system designed to offer 
 
 * Compact Focus: Mission-critical enterprise applications are prevalent not only in organizations with substantial computational resources but also across various industries. This underscores the necessity of developing applications and systems that can operate effectively on modest hardware configurations, ensuring accessibility to a broader user base. In the case of Nourich, it is essential for these models to be deployable on mobile devices, enabling users to capture images of food and query its suitability in the context of diabetes.
 
-* Neurosymbolic AI: In high-stakes domains, where incorrect outputs could have detrimental consequences, end-to-end embedding-based models may not be suitable. Embeddings, being approximation vectors that map words into embedding spaces, inherently involve information loss due to their approximative nature. Consequently, errors can arise, and when compounded within a complex pipeline, the magnitude of these errors can escalate. Therefore, there is a critical need for neurosymbolic models, where neural components are responsible for pattern recognition, and symbolic components support decision-making, ensuring greater accuracy and reliability. The 14 foundational elements ensure trustworthy AI systems while neurosymbolic nature facilitates development of these 14 elements. The necessity of 14 foundational elements are described in Table \ref{tab:14features}.
+* Neurosymbolic AI: In high-stakes domains, where incorrect outputs could have detrimental consequences, end-to-end embedding-based models may not be suitable. Embeddings, being approximation vectors that map words into embedding spaces, inherently involve information loss due to their approximative nature. Consequently, errors can arise, and when compounded within a complex pipeline, the magnitude of these errors can escalate. Therefore, there is a critical need for neurosymbolic models, where neural components are responsible for pattern recognition, and symbolic components support decision-making, ensuring greater accuracy and reliability. The 14 foundational elements ensure trustworthy AI systems while neurosymbolic nature facilitates development of these 14 elements. 
 
 
 The system incorporates several types of knowledge to enhance recipe analysis. Taxonomy refers to the hierarchical relationships among entities, where cooking methods and ingredient categories are organized in a structured manner. Causal knowledge captures the effects of specific events, such as how grilling meat produces carcinogens. Logical Constructs are curated for recipe analysis, where rules like "if an ingredient is high in cholesterol, it is unsuitable for diabetes" help guide decision-making. Furthermore, the system uses Rules to infer implicit knowledge, such as the rule that if the carbohydrate-to-fiber ratio of an ingredient is 10:1, it can be classified as a whole grain, suitable for diabetes; otherwise, it is not considered whole grain. Such variety of knowledge incorporation also demonstrates the need for neurosymbolic systems.
@@ -128,25 +128,49 @@ This prompt is an enhanced version of the Context Guided Prompt that includes sp
   <figure style='display: table'>
   <img src='llm-benchmarking/food_llm_benchmarking.png'>
   <p>
-    Figure 1:.
+    Figure 1:Performance metrics of all the LLMs across all three prompts visualized to study correlations. The number -1, -2 and -3 denote results of prompt-1, prompt-2 and prompt-3
   </p>
 </figure>
 </div>
+<br>
+<br>
 
 Mistral 7B and Llama3.1 70B exhibit consistent performance with minimal variation between precision and recall across all prompts compared to other models. Mistral-7B performed well in Direct Query Prompt, and Llama3.1-70B in Context Guided Prompt and Exemplary Prompt. Llama3.1 8B, a medium-sized model also seems to have benefited from Exemplary Context Prompt. While most Gemma2 class models have high precision, the recall is low. As shown in Figure \ref{fig:chart_metrics}, recall (dotted line) tends to be lower than precision (dashed line) across all prompts for most models. This indicates that the LLMs may be biased toward predicting recipes as "not suitable for diabetes" to avoid false positive errors. Consequently, the models appear overly cautious in classifying recipes as "suitable." In this context, the cost of false positives, incorrectly identifying a harmful recipe as safe for diabetes, could have adverse outcomes and the models seem to be aware of it. 
+<br>
+<br>
 
 <div style="text-align: center; margin-bottom: 20px;">
   <figure style='display: table'>
   <img src='llm-benchmarking/food_llm_heatmap.png'>
   <p>
-    Figure 2:
+    Figure 2: Keywords from diabetes dietary guidelines used by the models to reason over their decision making. The values are normalized using min-max scaling. P2 denote prompt-2 and P3 denote prompt-3
   </p>
 </figure>
 </div>
 
+<br>
+<br>
+
 **Impact of Reasoning on Model Performance and Stability:** In Context Guided Prompt (prompt-2) and Exemplary Context Prompt (prompt-3), models were instructed to justify their decisions using keywords derived from dietary guidelines, such as Healthy Carbohydrates, Trans Fat, Cholesterol, and others. Since dietary guidelines were not incorporated into the Direct Query Prompt (prompt-1), models were not instructed to provide reasoning. Gemma2 27B, a lightweight faster model, was used to extract keywords from the reasoning paragraph provided by LLMs for each recipes. The results showed that models classified a recipe as suitable for diabetes justifying by leveraging keywords from both the "recommend" and "avoid" sections of the guidelines. For example, a model might justify its prediction by stating that a recipe lacks saturated and trans fats, aligning with the "recommend" criteria. Consequently, when the model predicted a positive outcome (suitable), we utilized keywords from the "recommend" section for validation. Conversely, for negative predictions (not suitable), we extracted relevant keywords from the "avoid" section to evaluate the model's rationale.
 
-The heatmap presented in Figure 2 shows Mistral 7B produced the highest amount of diverse dietary guideline keywords in its reasoning. This supports the results presented in Figure 1 where Mistral 7B showed steady results across all prompts with less variation between precision and recall. Llama3.1 70B returned keywords clustered around good fats, healthy carbohydrates, and fibre-rich foods. To correlate better, we computed the average F1-score, average stability score (Equation 1), and the average count of keywords across all prompts for a given model. Figure \ref{fig:keyword_performance} demonstrates that the more keywords produced by the model in its reasoning, the better the F1-score and/or better the stability (less variation between precision and recall). It is to be noted that Gemma2-2B is the model with the second-highest stability score that correlates with the second-highest amount of keywords provided in the reasoning. Llama3.1-70B has the third-highest average of keyword count. ChatGPT and Llama3.2-2B had the least amount of keywords in their reasoning which correlates with lower F1-score. If a model confidently reasons with sufficient concepts from dietary guidelines, the model's stability and performance is better.
+<br>
+<br>
+
+<div style="text-align: center; margin-bottom: 20px;">
+  <figure style='display: table'>
+  <img src='llm-benchmarking/food-llm-keywords-performance.png'>
+  <p>
+    Figure 3: Correlation graph illustrating the relationship between models' reasoning ability and their performance and stability.
+  </p>
+</figure>
+</div>
+
+<br>
+<br>
+
+The heatmap presented in Figure 2 shows Mistral 7B produced the highest amount of diverse dietary guideline keywords in its reasoning. This supports the results presented in Figure 1 where Mistral 7B showed steady results across all prompts with less variation between precision and recall. Llama3.1 70B returned keywords clustered around good fats, healthy carbohydrates, and fibre-rich foods. To correlate better, we computed the average F1-score, average stability score (Stability = 1 - |Precision-Recall|), and the average count of keywords across all prompts for a given model. Figure 3 demonstrates that the more keywords produced by the model in its reasoning, the better the F1-score and/or better the stability (less variation between precision and recall). It is to be noted that Gemma2-2B is the model with the second-highest stability score that correlates with the second-highest amount of keywords provided in the reasoning. Llama3.1-70B has the third-highest average of keyword count. ChatGPT and Llama3.2-2B had the least amount of keywords in their reasoning which correlates with lower F1-score. If a model confidently reasons with sufficient concepts from dietary guidelines, the model's stability and performance is better.
+<br>
+
 
 
 ### View the Slideshow
